@@ -1,3 +1,4 @@
+
 name: Build M1 Mobile
 
 on:
@@ -10,18 +11,27 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '17'
+
       - uses: android-actions/setup-android@v4
+
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.9'
+
       - name: Extract project
         run: unzip -q M1Mobile-source.zip -d project
+
+      - name: Fix audio library
+        run: echo 'target_link_libraries(m1mobile OpenSLES)' >> project/app/src/main/cpp/CMakeLists.txt
+
       - name: Compile APK
         run: gradle -p project assembleDebug
+
       - uses: actions/upload-artifact@v4
         with:
           name: M1Mobile-debug
