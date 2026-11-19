@@ -26,6 +26,9 @@ jobs:
       - name: Extract project
         run: unzip -q M1Mobile-source.zip -d project
 
+      - name: Show MIDI imports
+        run: sed -n '1,25p' project/app/src/main/java/com/example/m1mobile/MainActivity.kt
+
       - name: Fix audio library
         run: echo 'target_link_libraries(m1mobile OpenSLES)' >> project/app/src/main/cpp/CMakeLists.txt
 
@@ -69,4 +72,3 @@ jobs:
         with:
           name: M1Mobile-debug
           path: project/app/build/outputs/apk/debug/app-debug.apk
-          
