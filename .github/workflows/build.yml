@@ -29,6 +29,39 @@ jobs:
       - name: Fix audio library
         run: echo 'target_link_libraries(m1mobile OpenSLES)' >> project/app/src/main/cpp/CMakeLists.txt
 
+      - name: Fix Java and Kotlin compatibility
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          p = Path("project/app/build.gradle.kts")
+          s = p.read_text()
+
+          if "compileOptions {" not in s:
+              s = s.replace("android {", """android {
+              compileOptions {
+                  sourceCompatibility = JavaVersion.VERSION_17
+                  targetCompatibility = JavaVersion.VERSION_17
+              }""", 1)
+          else:
+              s = re.sub(r'sourceCompatibility\s*=\s*[^\n]+',
+                         'sourceCompatibility = JavaVersion.VERSION_17', s)
+              s = re.sub(r'targetCompatibility\s*=\s*[^\n]+',
+                         'targetCompatibility = JavaVersion.VERSION_17', s)
+
+          if "kotlinOptions {" not in s:
+              s = s.replace("android {", """android {
+              kotlinOptions {
+                  jvmTarget = "17"
+              }""", 1)
+          else:
+              s = re.sub(r'jvmTarget\s*=\s*["\'][^"\']+["\']',
+                         'jvmTarget = "17"', s)
+
+          p.write_text(s)
+          PY
+
       - name: Compile APK
         run: gradle -p project assembleDebug
 
@@ -36,3 +69,4 @@ jobs:
         with:
           name: M1Mobile-debug
           path: project/app/build/outputs/apk/debug/app-debug.apk
+          
